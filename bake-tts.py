@@ -77,10 +77,25 @@ def _in_diagram(s) -> bool:
     ) is not None
 
 
+# Inline nav chips embedded in prose. `.fs` = "伏笔①", `.pay` = "回收①↑" —
+# foreshadow/payoff cross-reference anchors. They're visual navigation, not
+# narration; read aloud they inject "伏笔 一 回收 一" into a sentence.
+_SKIP_CLASSES_INLINE = ("fs", "pay")
+
+
+def _in_skipped_chip(s) -> bool:
+    return s.find_parent(
+        class_=lambda cl: cl and any(
+            c in _SKIP_CLASSES_INLINE
+            for c in (cl if isinstance(cl, list) else [cl])
+        )
+    ) is not None
+
+
 def visible_text(node) -> str:
     parts = []
     for s in node.strings:
-        if _in_diagram(s):
+        if _in_diagram(s) or _in_skipped_chip(s):
             continue
         holder = s.find_parent(_SKIP_TEXT_PARENTS)
         if holder is not None:
